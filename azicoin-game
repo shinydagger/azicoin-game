@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+
+<html lang="ar">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>AziCoin Game - Payment Ready</title>
+
+<script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+
+<style>
+
+/* (نفس التنسيقات السابقة مع تحسين بسيط للأزرار) */
+
+body { background: linear-gradient(180deg, #1e3a8a 0%, #172554 100%); color: #e0e7ff; text-align: center; font-family: sans-serif; margin: 0; overflow: hidden; display: flex; flex-direction: column; height: 100vh; justify-content: space-between; padding: 20px; box-sizing: border-box; }
+
+#top-bar { width: 100%; display: flex; justify-content: space-between; align-items: center; }
+
+#score-container { font-size: 3rem; font-weight: bold; color: #ffe066; }
+
+.coin-button { width: 250px; height: 250px; border-radius: 50%; background: url('https://i.imgur.com/G4P4QW0.png'); background-size: cover; border: 8px solid #ffd700; cursor: pointer; margin: auto; box-shadow: 0 0 50px rgba(255, 215, 0, 0.4); }
+
+.coin-button:active { transform: scale(0.95); }
+
+.bottom-nav { display: flex; justify-content: space-around; width: 100%; background: rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 10px 0; }
+
+.nav-button { background: none; border: none; color: white; cursor: pointer; display: flex; flex-direction: column; align-items: center; font-size: 0.8rem; }
+
+.overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 1000; }
+
+.upgrade-panel { background: #1a233b; padding: 25px; border-radius: 20px; width: 80%; max-width: 350px; }
+
+.upgrade-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; }
+
+.buy-button { background: #28a745; color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+
+</style>
+
+</head>
+
+<div id="top-bar">
+
+<div id="score-container">0</div>
+
+<div id="ton-connect-button"></div>
+
+</div>
+
+<div class="coin-button" onclick="tapCoin(event)"></div>
+
+
+<div class="bottom-nav">
+
+<button class="nav-button" onclick="document.getElementById('upgrades-overlay').style.display='flex'">
+
+<span>🚀 Upgrades</span>
+
+</button>
+
+<button class="nav-button"><span>👥 Friends</span></button>
+
+<button class="nav-button"><span>📋 Tasks</span></button>
+
+</div>
+
+
+<div id="upgrades-overlay" class="overlay">
+
+<div class="upgrade-panel">
+
+<h2 style="color: #ffe066;">Upgrades</h2>
+
+<div class="upgrade-item">
+
+<span>👆 Multi-Tap (x2)</span>
+
+<button class="buy-button" onclick="payWithTON()">Buy (3 TON)</button>
+
+</div>
+
+<button onclick="document.getElementById('upgrades-overlay').style.display='none'" style="background:none; border:none; color:gray; cursor:pointer;">Close</button>
+
+</div>
+
+</div>
+
+
+<script>
+
+// 1. إعداد محفظتك لاستقبال الأموال
+
+const myWalletAddress = "UQD3aBdT9BTOvVEtr0ISclxJ_itNhE2PEFy5nPXqOfp5yQVS";
+
+
+// 2. تهيئة TON Connect UI
+
+const tonConnectUI = new TONConnectUI.TonConnectUI({
+
+manifestUrl: 'https://raw.githubusercontent.com/ton-community/tutorials/main/03-client/test/public/tonconnect-manifest.json', // مؤقت
+
+buttonRootId: 'ton-connect-button'
+
+});
+
+
+// منطق النقرات
+
+let score = parseInt(localStorage.getItem('aziScore') || '0');
+
+let multiplier = parseInt(localStorage.getItem('aziMult') || '1');
+
+document.getElementById('score-container').innerText = score;
+
+function tapCoin(event) {
+
+score += multiplier;
+
+document.getElementById('score-container').innerText = score;
+
+localStorage.setItem('aziScore', score);
+
+}
+
+
+// 3. وظيفة الدفع الحقيقي
+
+async function payWithTON() {
+
+if (!tonConnectUI.connected) {
+
+alert("يرجى ربط المحفظة أولاً عبر زر Connect Wallet في الأعلى");
+
+return;
+
+}
+
+
+const transaction = {
+
+validUntil: Math.floor(Date.now() / 1000) + 60, // صالحة لمدة 60 ثانية
+
+messages: [
+
+{
+
+address: myWalletAddress, // عنوان محفظتك
+
+amount: "3000000000" // المبلغ بـ NanoTON (3 TON = 3,000,000,000)
+
+}
+
+]
+
+};
+
+
+try {
+
+const result = await tonConnectUI.sendTransaction(transaction);
+
+alert("تمت عملية الدفع بنجاح! مبروك الترقية.");
+
+multiplier = 2;
+
+localStorage.setItem('aziMult', '2');
+
+document.getElementById('upgrades-overlay').style.display =
+
+'none';
+
+} catch (e) {
+
+console.error(e);
+
+alert("تم إلغاء العملية أو حدث خطأ أثناء الدفع.");
+
+}
+
+}
+
+</script>
+
+</body>
+
+</html>
+
+<body>
